@@ -25,7 +25,7 @@ rendererFlag = 0
 
 high_priority_val = 1
 
-
+pos_range = 45
 
 def deg2rad(rad):
     deg = (math.pi/180)*rad
@@ -36,7 +36,7 @@ def start_renderer(renderer):
     if renderer == 0:
         subprocess.call(['./renderer_all_speakers.sh'])
     elif renderer == 1:
-        subprocess.call(['./renderer_5_1.sh'])
+        subprocess.call(['./renderer_2_0.sh'])
 
 def send_receive_json(HOST,PORT_R,PORT_S):
 
@@ -108,40 +108,40 @@ class mySlider(GridLayout):
 
     def __init__(self, **kwargs):
         super(mySlider, self).__init__(**kwargs)
-        self.cols = 17
+        self.cols = 16
         object1_lev_slider = Slider(min=0, max=1,orientation='vertical',value=object_level[0])
-        object1_pos_slider = Slider(min=-90, max=90,orientation='vertical',value=object_pos[0])
+        object1_pos_slider = Slider(min=-pos_range, max=pos_range,orientation='vertical',value=object_pos[0])
         object2_lev_slider = Slider(min=0, max=1,orientation='vertical',value=object_level[1])
-        object2_pos_slider = Slider(min=-90, max=90,orientation='vertical',value=object_pos[1])
+        object2_pos_slider = Slider(min=-pos_range, max=pos_range,orientation='vertical',value=object_pos[1])
         object3_lev_slider = Slider(min=0, max=1,orientation='vertical',value=object_level[2])
-        object3_pos_slider = Slider(min=-90, max=90,orientation='vertical',value=object_pos[2])
+        object3_pos_slider = Slider(min=-pos_range, max=pos_range,orientation='vertical',value=object_pos[2])
         object4_lev_slider = Slider(min=0, max=1,orientation='vertical',value=object_level[3])
-        object4_pos_slider = Slider(min=-90, max=90,orientation='vertical',value=object_pos[3])
+        object4_pos_slider = Slider(min=-pos_range, max=pos_range,orientation='vertical',value=object_pos[3])
         object5_lev_slider = Slider(min=0, max=1,orientation='vertical',value=object_level[4])
-        object5_pos_slider = Slider(min=-90, max=90,orientation='vertical',value=object_pos[4])
+        object5_pos_slider = Slider(min=-pos_range, max=pos_range,orientation='vertical',value=object_pos[4])
         object6_lev_slider = Slider(min=0, max=1,orientation='vertical',value=object_level[5])
-        object6_pos_slider = Slider(min=-90, max=90,orientation='vertical',value=object_pos[5])
+        object6_pos_slider = Slider(min=-pos_range, max=pos_range,orientation='vertical',value=object_pos[5])
         object7_lev_slider = Slider(min=0, max=1,orientation='vertical',value=object_level[6])
-        object7_pos_slider = Slider(min=-90, max=90,orientation='vertical',value=object_pos[6])
+        object7_pos_slider = Slider(min=-pos_range, max=pos_range,orientation='vertical',value=object_pos[6])
         object8_lev_slider = Slider(min=0, max=1,orientation='vertical',value=object_level[7])
-        object8_pos_slider = Slider(min=-90, max=90,orientation='vertical',value=object_pos[7])
+        object8_pos_slider = Slider(min=-pos_range, max=pos_range,orientation='vertical',value=object_pos[7])
         object9_lev_slider = Slider(min=0, max=1,orientation='vertical',value=object_level[8])
-        object9_pos_slider = Slider(min=-90, max=90,orientation='vertical',value=object_pos[8])
+        object9_pos_slider = Slider(min=-pos_range, max=pos_range,orientation='vertical',value=object_pos[8])
         object10_lev_slider = Slider(min=0, max=1,orientation='vertical',value=object_level[9])
-        object10_pos_slider = Slider(min=-90, max=90,orientation='vertical',value=object_pos[9])
+        object10_pos_slider = Slider(min=-pos_range, max=pos_range,orientation='vertical',value=object_pos[9])
         object11_lev_slider = Slider(min=0, max=1,orientation='vertical',value=object_level[10])
-        object11_pos_slider = Slider(min=-90, max=90,orientation='vertical',value=object_pos[10])
+        object11_pos_slider = Slider(min=-pos_range, max=pos_range,orientation='vertical',value=object_pos[10])
         object12_lev_slider = Slider(min=0, max=1,orientation='vertical',value=object_level[11])
-        object12_pos_slider = Slider(min=-90, max=90,orientation='vertical',value=object_pos[11])
+        object12_pos_slider = Slider(min=-pos_range, max=pos_range,orientation='vertical',value=object_pos[11])
         object13_lev_slider = Slider(min=0, max=1,orientation='vertical',value=object_level[12])
-        object13_pos_slider = Slider(min=-90, max=90,orientation='vertical',value=object_pos[13])
+        object13_pos_slider = Slider(min=-pos_range, max=pos_range,orientation='vertical',value=object_pos[13])
         object14_lev_slider = Slider(min=0, max=1,orientation='vertical',value=object_level[13])
-        object14_pos_slider = Slider(min=-90, max=90,orientation='vertical',value=object_pos[14])
+        object14_pos_slider = Slider(min=-pos_range, max=pos_range,orientation='vertical',value=object_pos[14])
         object15_lev_slider = Slider(min=0, max=1,orientation='vertical',value=object_level[14])
-        object15_pos_slider = Slider(min=-90, max=90,orientation='vertical',value=object_pos[15])
+        object15_pos_slider = Slider(min=-pos_range, max=pos_range,orientation='vertical',value=object_pos[15])
         object16_lev_slider = Slider(min=0, max=1,orientation='vertical',value=object_level[15])
-        object16_pos_slider = Slider(min=-90, max=90,orientation='vertical')
-        btn_toggle_renderer = ToggleButton(text = "Switch renderer")
+        object16_pos_slider = Slider(min=-pos_range, max=pos_range,orientation='vertical')
+        btn_toggle_renderer = ToggleButton(text = "Switch renderer",state = 'down')
         btn_play = Button(text = "PLAY") 
         btn_stop = Button(text = "STOP")      
         object1_lev_slider.bind(value=self.set_object1_level)
@@ -195,7 +195,6 @@ class mySlider(GridLayout):
         self.add_widget(object14_lev_slider)
         self.add_widget(object15_lev_slider)
         self.add_widget(object16_lev_slider)
-        self.add_widget(btn_toggle_renderer)
         self.add_widget(object1_pos_slider)
         self.add_widget(object2_pos_slider)
         self.add_widget(object3_pos_slider)
@@ -212,6 +211,7 @@ class mySlider(GridLayout):
         self.add_widget(object14_pos_slider)
         self.add_widget(object15_pos_slider)
         self.add_widget(object16_pos_slider)
+        self.add_widget(btn_toggle_renderer)
         self.add_widget(btn_play)
         self.add_widget(btn_stop)
         #self.add_widget(Label(text='Narrator level'))
