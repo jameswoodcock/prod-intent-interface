@@ -90,6 +90,13 @@ def send_receive_json(HOST,PORT_R,PORT_S):
         #print 'hi'
         s.sendto(newjsonmsg,(HOST,PORT_S))
 
+def monitor_midi():
+    with mido.open_input('HDSPMx73554b MIDI 3') as port:
+        for message in port:
+            if message.type != 'quarter_frame':
+                last_time = message
+                print last_time
+
 renderer_thread = threading.Thread(target=start_renderer,args=[renderer])
 if renderer_thread.isAlive():
     print 'Its alive'
@@ -98,6 +105,10 @@ renderer_thread.start()
 
 thread = threading.Thread(target=send_receive_json,args=(HOST,PORT_R,PORT_S))
 thread.start()
+
+midi_thread = threading.Thread(target=monitor_midi)
+midi_thread.start()
+
 
 #make GUI
 from kivy.app import App
