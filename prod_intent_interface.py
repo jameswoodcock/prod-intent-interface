@@ -7,6 +7,7 @@ import threading
 import subprocess
 import math
 import mido
+import uuid
 #from Tkinter import *
 
 HOST = 'localhost'
@@ -26,6 +27,8 @@ rendererFlag = 0
 high_priority_val = 1
 
 pos_range = 45
+
+fname = str(uuid.uuid4()) + '.txt'
 
 def deg2rad(rad):
     deg = (math.pi/180)*rad
@@ -105,6 +108,8 @@ from kivy.uix.button import Button
 from kivy.uix.togglebutton import ToggleButton
 from kivy.garden.knob import Knob
 from kivy.core.window import Window
+from kivy.clock import Clock
+
 Window.clearcolor = (0.8, 0.8, 0.9,0)
 
 class mySlider(GridLayout):
@@ -254,113 +259,113 @@ class mySlider(GridLayout):
         object_level[0] = val
         #print instance
         print 'Obj1 level set to ' + str(object_level[0])
-        with open("results.txt","a") as myfile:
-            myfile.write(str(object_level) + '\n')
+
+
 
     def set_object2_level(self,instance,val):
         global object_level
         object_level[1] = val
         print 'Obj2 level set to ' + str(object_level[1])
-        with open("results.txt","a") as myfile:
-            myfile.write(str(object_level) + '\n')
+
+
 
     def set_object3_level(self,instance,val):
         global object_level
         object_level[2] = val
         print 'Obj3 level set to ' + str(object_level[2])
-        with open("results.txt","a") as myfile:
-            myfile.write(str(object_level) + '\n')
+
+
 
     def set_object4_level(self,instance,val):
         global object_level
         object_level[3] = val
         print 'Obj4 level set to ' + str(object_level[3])
-        with open("results.txt","a") as myfile:
-            myfile.write(str(object_level) + '\n')       
+
+       
 
     def set_object5_level(self,instance,val):
         global narrator_level
         object_level[4] = val
         print 'Obj5 position set to ' + str(object_level[4])
-        with open("results.txt","a") as myfile:
-            myfile.write(str(object_level) + '\n')
+
+
 
     def set_object6_level(self,instance,val):
         global object_level
         object_level[5] = val
         print 'Obj6 level set to ' + str(object_level[5])
-        with open("results.txt","a") as myfile:
-            myfile.write(str(object_level) + '\n')
+
+
 
     def set_object7_level(self,instance,val):
         global object_level
         object_level[6] = val
         print 'Obj7 level set to ' + str(object_level[6])
-        with open("results.txt","a") as myfile:
-            myfile.write(str(object_level) + '\n')
+
+
 
     def set_object8_level(self,instance,val):
         global object_level
         object_level[7] = val
         print 'Obj8 level set to ' + str(object_level[7])
-        with open("results.txt","a") as myfile:
-            myfile.write(str(object_level) + '\n')
+
+
 
     def set_object9_level(self,instance,val):
         global object_level
         object_level[8] = val
         print 'Obj4 level set to ' + str(object_level[8])
-        with open("results.txt","a") as myfile:
-            myfile.write(str(object_level) + '\n')
+
+
 
     def set_object10_level(self,instance,val):
         global object_level
         object_level[9] = val
         print 'Obj10 level set to ' + str(object_level[9])
-        with open("results.txt","a") as myfile:
-            myfile.write(str(object_level) + '\n')
+
+
 
     def set_object11_level(self,instance,val):
         global object_level
         object_level[10] = val
         print 'Obj11 level set to ' + str(object_level[10])
-        with open("results.txt","a") as myfile:
-            myfile.write(str(object_level) + '\n') 
+
+ 
 
     def set_object12_level(self,instance,val):
         global object_level
         object_level[11] = val
         print 'Obj12 level set to ' + str(object_level[11])
-        with open("results.txt","a") as myfile:
-            myfile.write(str(object_level) + '\n') 
+
+ 
 
     def set_object13_level(self,instance,val):
         global object_level
         object_level[12] = val
         print 'Obj13 level set to ' + str(object_level[12]) 
-        with open("results.txt","a") as myfile:
-            myfile.write(str(object_level) + '\n')
+
+
 
     def set_object14_level(self,instance,val):
         global object_level
         object_level[13] = val
         print 'Obj14 level set to ' + str(object_level[13])
-        with open("results.txt","a") as myfile:
-            myfile.write(str(object_level) + '\n')
+
+
 
     def set_object15_level(self,instance,val):
         global object_level
         object_level[14] = val
         print 'Obj15 level set to ' + str(object_level[14])
-        with open("results.txt","a") as myfile:
-            myfile.write(str(object_level) + '\n') 
+
+ 
 
     def set_object16_level(self,instance,val):
         global object_level
         object_level[15] = val
         print 'Obj16 level set to ' + str(object_level[15])
-        with open("results.txt","a") as myfile:
-            myfile.write(str(object_level) + '\n')                                
+
+                                
 
     def set_object1_pos(self,instance,val):
         global object_pos
@@ -473,12 +478,24 @@ class mySlider(GridLayout):
         stop_msg = mido.Message('sysex', data=[127, 127, 6, 1])    
         outport.send(stop_msg)
 
+    def write_data(self,dt):
+        global object_level
+        global object_pos
+        global fname
+        with open(fname,"a") as myfile:
+            myfile.write(str(object_level) + '\n')
+            myfile.write(str(object_pos) + '\n')
+
+
+
 class MyApp(App):
-    slider_update = mySlider()
+    
 
     def build(self):
+        interface = mySlider()
         self.title = ''
-        return mySlider()
+        Clock.schedule_interval(interface.write_data,0.1)
+        return interface
 
 if __name__ == '__main__':
 
