@@ -90,7 +90,7 @@ def send_receive_json(HOST,PORT_R,PORT_S):
 
     #talk with client
     while 1:
-        print time.time() - t
+        #print time.time() - t
         t = time.time()
         #time.sleep(0.6) 
         #receive data from client
@@ -110,27 +110,28 @@ def send_receive_json(HOST,PORT_R,PORT_S):
                     metadataInd = metadataInd + 1
                     print metadataInd
                 if rendererFlag == 1:                       #Only operate on objects if downmix
+
                     newmsg = metadataAdjusted[metadataInd]
                     metadataInd = metadataInd + 1
                     print metadataInd    
-                    for i in range(Nobjs):         #Cycle through object list
-                        for j in range(len(objectIDs[i])):
-                            #print 'j = ' + str(j)
-                            #print rendererFlag
-                            newmsg['objects'][objectIDs[i][j]]['level'] = object_level[i]
-                            if newmsg['objects'][objectIDs[i][j]]['type'] == 'plane':
-                                newmsg['objects'][objectIDs[i][j]]['direction']['az'] = object_pos[i]
-                            else:
-                                newmsg['objects'][objectIDs[i][j]]['position']['x'] = math.cos(deg2rad(object_pos[i]))
-                                newmsg['objects'][objectIDs[i][j]]['position']['y'] = math.sin(deg2rad(object_pos[i]))      
-                            #if newmsg['objects'][i]['priority'] == 1:
-                                #print 'in if object' + str(i)
-                                #newmsg['objects'][i]['level'] = high_priority_val
-                    
-                    if record = 1:
-                        metadataAdjusted[metadataInd] = newmsg
-                    else:
-                        #
+                                       
+                    if record == 1:
+                        print "recording..."
+                        for i in range(Nobjs):         #Cycle through object list
+                            for j in range(len(objectIDs[i])):
+                                #print 'j = ' + str(j)
+                                #print rendererFlag
+                                newmsg['objects'][objectIDs[i][j]]['level'] = object_level[i]
+                                if newmsg['objects'][objectIDs[i][j]]['type'] == 'plane':
+                                    newmsg['objects'][objectIDs[i][j]]['direction']['az'] = object_pos[i]
+                                else:
+                                    newmsg['objects'][objectIDs[i][j]]['position']['x'] = math.cos(deg2rad(object_pos[i]))
+                                    newmsg['objects'][objectIDs[i][j]]['position']['y'] = math.sin(deg2rad(object_pos[i]))      
+                                #if newmsg['objects'][i]['priority'] == 1:
+                                    #print 'in if object' + str(i)
+                                    #newmsg['objects'][i]['level'] = high_priority_val
+                            metadataAdjusted[metadataInd] = newmsg
+
 
         newjsonmsg = json.dumps(newmsg)
         
@@ -543,12 +544,12 @@ class mySlider(GridLayout):
         global record 
        
         if val == 'down':          
-            record = 1
+            record = 0
             print record
             
         else:
             print "button is up"
-            rendererFlag = 0
+            record = 1
             print record
 
 
