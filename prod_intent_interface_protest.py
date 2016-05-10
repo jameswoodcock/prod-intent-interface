@@ -461,7 +461,11 @@ class mySlider(GridLayout):
 
     def play(self,instance):
         outport = mido.open_output('HDSPMx73554b MIDI 3')
-        play_msg = mido.Message('sysex', data=[127, 127, 6, 3])    
+        stop = mido.Message('sysex', data=[127, 127, 6, 1])
+        move = mido.Message('sysex', data=[127,127,6,68,6,1,33,0,0,0,0])
+        play_msg = mido.Message('sysex', data=[127, 127, 6, 3])
+        outport.send(stop)
+        outport.send(move)
         outport.send(play_msg)
 
     def stop(self,instance):

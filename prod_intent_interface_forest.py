@@ -1,4 +1,9 @@
-#Receive JSON object messages
+#!/usr/bin/env python
+
+######
+# qjackctl -s
+# saw_converter -r 4243 -s 4242
+
 import json
 import socket
 import sys
@@ -8,7 +13,19 @@ import subprocess
 import math
 import mido
 import uuid
-#from Tkinter import *
+
+#import kivy libraries
+from kivy.app import App
+from kivy.uix.gridlayout import GridLayout
+from kivy.uix.slider import Slider
+from kivy.uix.label import Label
+from kivy.uix.button import Button
+from kivy.uix.togglebutton import ToggleButton
+from kivy.garden.knob import Knob
+from kivy.core.window import Window
+from kivy.clock import Clock
+
+Window.clearcolor = (0.8, 0.8, 0.9,0)
 
 HOST = 'localhost'
 PORT_R = 4242
@@ -19,16 +36,25 @@ PORT_S = 4240
 objectIDs = [[0],[1,2],[3,4],[5,6],[7,8],[9,10],[11,12],[13,14],[15,16],[17,18],[19,20],[21,22],[23,24],[25,26],range(27,44),range(44,60)]          #Number of objects
 Nobjs = len(objectIDs)
 object_level = [1]*Nobjs
-object_pos = [0]*Nobjs
+object_pos = [1]*Nobjs
 
 renderer = 0
 rendererFlag = 0
 
 high_priority_val = 1
 
-pos_range = 45
+pos_range = 180      #Max/min position in degrees
+
+loop_len = 30       #Length of loop in seconds
 
 fname = str(uuid.uuid4()) + '.txt'
+
+metadata = list()
+metadataAdjusted = list()
+metadataInd = 0
+firstLoop = 1
+
+record = 0
 
 def deg2rad(rad):
     deg = (math.pi/180)*rad
@@ -39,10 +65,10 @@ def start_renderer(renderer):
     if renderer == 0:
         subprocess.call(['./renderer_all_speakers.sh'])
     elif renderer == 1:
-        subprocess.call(['./renderer_2_0.sh'])
+        subprocess.call(['./renderer_5_1.sh'])
 
 def send_receive_json(HOST,PORT_R,PORT_S):
-
+    global firstLoop, metadata, metadataAdjusted, metadataInd, record
     # UDP socket
     try :
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -60,35 +86,57 @@ def send_receive_json(HOST,PORT_R,PORT_S):
 
     print 'Socket bind complete'
 
+    t = 0
+
     #talk with client
     while 1:
-
+        print time.time() - t
+        t = time.time()
+        #time.sleep(0.6) 
         #receive data from client
-        d = s.recvfrom(16384)
-        data = d[0]
+        d = s.recvfrom(16384)       #Receive UDP packet
+        data = d[0]                 #Get data from UDP packet
         addr = d[1]
 
-        newmsg = json.loads(data.strip())
+        newmsg = json.loads(data.strip())       #Parse JSON message
 
-        if rendererFlag == 1:                       #Only operate on objects if downmix
-
-            for i in range(Nobjs):         #Cycle through object list
-                for j in range(len(objectIDs[i])):
-                    #print 'j = ' + str(j)
-                    #print rendererFlag
-                    newmsg['objects'][objectIDs[i][j]]['level'] = object_level[i]
-                    if newmsg['objects'][objectIDs[i][j]]['type'] == 'plane':
-                        newmsg['objects'][objectIDs[i][j]]['direction']['az'] = object_pos[i]
+        if firstLoop == 1:          
+            metadata.append(newmsg)         #Populate metadata in first loop
+            metadataAdjusted.append(newmsg)         #Populate metadata in first loop
+        else:                               #Run from 
+            if metadataInd < len(metadata) - 1:
+                if rendererFlag == 0:
+                    newmsg = metadata[metadataInd]
+                    metadataInd = metadataInd + 1
+                    print metadataInd
+                if rendererFlag == 1:                       #Only operate on objects if downmix
+                    newmsg = metadataAdjusted[metadataInd]
+                    metadataInd = metadataInd + 1
+                    print metadataInd    
+                    for i in range(Nobjs):         #Cycle through object list
+                        for j in range(len(objectIDs[i])):
+                            #print 'j = ' + str(j)
+                            #print rendererFlag
+                            newmsg['objects'][objectIDs[i][j]]['level'] = object_level[i]
+                            if newmsg['objects'][objectIDs[i][j]]['type'] == 'plane':
+                                newmsg['objects'][objectIDs[i][j]]['direction']['az'] = object_pos[i]
+                            else:
+                                newmsg['objects'][objectIDs[i][j]]['position']['x'] = math.cos(deg2rad(object_pos[i]))
+                                newmsg['objects'][objectIDs[i][j]]['position']['y'] = math.sin(deg2rad(object_pos[i]))      
+                            #if newmsg['objects'][i]['priority'] == 1:
+                                #print 'in if object' + str(i)
+                                #newmsg['objects'][i]['level'] = high_priority_val
+                    
+                    if record = 1:
+                        metadataAdjusted[metadataInd] = newmsg
                     else:
-                        newmsg['objects'][objectIDs[i][j]]['position']['x'] = math.cos(deg2rad(object_pos[i]))
-                        newmsg['objects'][objectIDs[i][j]]['position']['y'] = math.sin(deg2rad(object_pos[i]))      
-                    #if newmsg['objects'][i]['priority'] == 1:
-                        #print 'in if object' + str(i)
-                        #newmsg['objects'][i]['level'] = high_priority_val
+                        #
 
         newjsonmsg = json.dumps(newmsg)
+        
         #print 'hi'
         s.sendto(newjsonmsg,(HOST,PORT_S))
+
 
 def monitor_midi():
     with mido.open_input('HDSPMx73554b MIDI 3') as port:
@@ -96,6 +144,29 @@ def monitor_midi():
             if message.type != 'quarter_frame':
                 last_time = message
                 print last_time
+
+def play_loop(dt):                                              #Start playing at beginning of loop
+    global firstLoop, metadataInd, thread
+    firstLoop = 0
+    metadataInd = 0
+    outport = mido.open_output('HDSPMx73554b MIDI 3')
+    stop = mido.Message('sysex', data=[127, 127, 6, 1])
+    move = mido.Message('sysex', data=[127,127,6,68,6,1,33,0,0,0,0])
+    play_msg = mido.Message('sysex', data=[127, 127, 6, 3])
+    outport.send(stop)
+    outport.send(move)
+    outport.send(play_msg)
+    
+
+
+def play_first_loop(dt):                                              #Start playing at beginning of loop
+    outport = mido.open_output('HDSPMx73554b MIDI 3')
+    stop = mido.Message('sysex', data=[127, 127, 6, 1])
+    move = mido.Message('sysex', data=[127,127,6,68,6,1,33,0,0,0,0])
+    play_msg = mido.Message('sysex', data=[127, 127, 6, 3])
+    outport.send(stop)
+    outport.send(move)
+    outport.send(play_msg)
 
 renderer_thread = threading.Thread(target=start_renderer,args=[renderer])
 if renderer_thread.isAlive():
@@ -108,20 +179,6 @@ thread.start()
 
 midi_thread = threading.Thread(target=monitor_midi)
 midi_thread.start()
-
-
-#make GUI
-from kivy.app import App
-from kivy.uix.gridlayout import GridLayout
-from kivy.uix.slider import Slider
-from kivy.uix.label import Label
-from kivy.uix.button import Button
-from kivy.uix.togglebutton import ToggleButton
-from kivy.garden.knob import Knob
-from kivy.core.window import Window
-from kivy.clock import Clock
-
-Window.clearcolor = (0.8, 0.8, 0.9,0)
 
 class mySlider(GridLayout):
 
@@ -161,6 +218,7 @@ class mySlider(GridLayout):
         object15_pos_slider = Slider(min=-pos_range, max=pos_range,orientation='vertical',value=object_pos[15])
         object16_lev_slider = Slider(min=0, max=1,orientation='vertical',value=object_level[15])
         object16_pos_slider = Slider(min=-pos_range, max=pos_range,orientation='vertical')
+        btn_toggle_record = ToggleButton(text = "Record",state = 'down')
         btn_toggle_renderer = ToggleButton(text = "Switch renderer",state = 'down')
         btn_play = Button(text = "PLAY") 
         btn_stop = Button(text = "STOP")      
@@ -196,6 +254,7 @@ class mySlider(GridLayout):
         object15_pos_slider.bind(value=self.set_object15_pos)
         object16_lev_slider.bind(value=self.set_object16_level)
         object16_pos_slider.bind(value=self.set_object16_pos)
+        btn_toggle_record.bind(state=self.switch_record)
         btn_toggle_renderer.bind(state=self.switch_renderer)
         btn_play.bind(on_press = self.play)
         btn_stop.bind(on_press = self.stop)
@@ -256,7 +315,7 @@ class mySlider(GridLayout):
         self.add_widget(Label(text=''))
         self.add_widget(Label(text=''))
         self.add_widget(Label(text=''))
-        self.add_widget(Label(text=''))
+        self.add_widget(btn_toggle_record)
         self.add_widget(btn_toggle_renderer)
         self.add_widget(btn_play)
         self.add_widget(btn_stop)
@@ -479,12 +538,35 @@ class mySlider(GridLayout):
             renderer_thread = threading.Thread(target=start_renderer,args=[1])
             renderer_thread.start()
 
+
+    def switch_record(self,instance,val):
+        global record 
+       
+        if val == 'down':          
+            record = 1
+            print record
+            
+        else:
+            print "button is up"
+            rendererFlag = 0
+            print record
+
+
     def play(self,instance):
-        outport = mido.open_output('HDSPMx73554b MIDI 3')
-        play_msg = mido.Message('sysex', data=[127, 127, 6, 3])    
-        outport.send(play_msg)
+        print 'hi'
+        Clock.unschedule(play_loop)
+        Clock.schedule_once(play_loop)
+        Clock.schedule_interval(play_loop,loop_len)
+        #outport = mido.open_output('HDSPMx73554b MIDI 3')
+        #stop = mido.Message('sysex', data=[127, 127, 6, 1])
+        #move = mido.Message('sysex', data=[127,127,6,68,6,1,33,0,0,0,0])
+        #play_msg = mido.Message('sysex', data=[127, 127, 6, 3])
+        #outport.send(stop)
+        #outport.send(move)
+        #outport.send(play_msg)
 
     def stop(self,instance):
+        Clock.unschedule(play_loop)
         outport = mido.open_output('HDSPMx73554b MIDI 3')
         stop_msg = mido.Message('sysex', data=[127, 127, 6, 1])    
         outport.send(stop_msg)
@@ -505,7 +587,10 @@ class MyApp(App):
     def build(self):
         interface = mySlider()
         self.title = ''
+        #interface.play()
         Clock.schedule_interval(interface.write_data,0.1)
+        Clock.schedule_once(play_first_loop)
+        Clock.schedule_interval(play_loop,loop_len)
         return interface
 
 if __name__ == '__main__':
