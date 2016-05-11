@@ -117,23 +117,21 @@ def send_receive_json(HOST,PORT_R,PORT_S):
                 if rendererFlag == 1:                       #Only operate on objects if downmix
                     newmsg = metadataAdjusted[metadataInd]
                     metadataInd = metadataInd + 1
-                    print metadataInd    
-                                       
-                    if record == 1:
-                        print "recording..."
-                        try:
-                            for i in range(Nobjs):         #Cycle through object list
-                                for j in range(len(objectIDs[i])):
-                                    #newmsg['objects'][objectIDs[i][j]]['level'] = object_level[i]
-                                    newmsg['objects'][objectIDs[i][j]]['level'] = object_level_list[metadataInd][i]
-                                    if newmsg['objects'][objectIDs[i][j]]['type'] == 'plane':
-                                        newmsg['objects'][objectIDs[i][j]]['direction']['az'] = object_pos_list[metadataInd][i]
-                                    else:
-                                        newmsg['objects'][objectIDs[i][j]]['position']['x'] = math.cos(deg2rad(object_pos_list[metadataInd][i]))
-                                        newmsg['objects'][objectIDs[i][j]]['position']['y'] = math.sin(deg2rad(object_pos_list[metadataInd][i]))      
-                                metadataAdjusted[metadataInd] = newmsg
-                        except:
-                            print 'Index excceded list size'
+                    print metadataInd                       
+                    #print "recording..."
+                    try:
+                        for i in range(Nobjs):         #Cycle through object list
+                            for j in range(len(objectIDs[i])):
+                                #newmsg['objects'][objectIDs[i][j]]['level'] = object_level[i]
+                                newmsg['objects'][objectIDs[i][j]]['level'] = object_level_list[metadataInd][i]
+                                if newmsg['objects'][objectIDs[i][j]]['type'] == 'plane':
+                                    newmsg['objects'][objectIDs[i][j]]['direction']['az'] = object_pos_list[metadataInd][i]
+                                else:
+                                    newmsg['objects'][objectIDs[i][j]]['position']['x'] = math.cos(deg2rad(object_pos_list[metadataInd][i]))
+                                    newmsg['objects'][objectIDs[i][j]]['position']['y'] = math.sin(deg2rad(object_pos_list[metadataInd][i]))      
+                            metadataAdjusted[metadataInd] = newmsg
+                    except:
+                        print 'Index excceded list size'
 
         newjsonmsg = json.dumps(newmsg)
         
@@ -324,243 +322,211 @@ class mySlider(GridLayout):
         self.add_widget(self.btn_stop)
 
     def set_object1_level(self,instance,val):
-        global object_level, metadataInd, object_level_list
-        object_level[0] = val
-        for i in range(metadataInd,len(object_level_list)):
-            object_level_list[i][0] = val        
-        print 'Obj1 level set to ' + str(object_level[0])   
+        global metadataInd, object_level_list, record
+        if record == 1:
+            for i in range(metadataInd,len(object_level_list)):
+                object_level_list[i][0] = val 
 
     def set_object2_level(self,instance,val):
-        global object_level, metadataInd, object_level_list
-        object_level[1] = val
-        for i in range(metadataInd,len(object_level_list)):
-            object_level_list[i][1] = val        
-        print 'Obj2 level set to ' + str(object_level[1])
+        global metadataInd, object_level_list, record
+        if record == 1:
+            for i in range(metadataInd,len(object_level_list)):
+                object_level_list[i][1] = val 
 
 
     def set_object3_level(self,instance,val):
-        global object_level, metadataInd, object_level_list
-        object_level[2] = val
-        for i in range(metadataInd,len(object_level_list)):
-            object_level_list[i][2] = val        
-        print 'Obj3 level set to ' + str(object_level[2])
+        global metadataInd, object_level_list, record
+        if record == 1:
+            for i in range(metadataInd,len(object_level_list)):
+                object_level_list[i][2] = val 
 
 
     def set_object4_level(self,instance,val):
-        global object_level, metadataInd, object_level_list
-        object_level[3] = val
-        for i in range(metadataInd,len(object_level_list)):
-            object_level_list[i][3] = val
-        print 'Obj4 level set to ' + str(object_level[3])
+        global metadataInd, object_level_list, record
+        if record == 1:
+            for i in range(metadataInd,len(object_level_list)):
+                object_level_list[i][3] = val 
 
        
     def set_object5_level(self,instance,val):
-        global object_level, metadataInd, object_level_list
-        object_level[4] = val
-        for i in range(metadataInd,len(object_level_list)):
-            object_level_list[i][4] = val
-        print 'Obj5 position set to ' + str(object_level[4])
+        global metadataInd, object_level_list, record
+        if record == 1:
+            for i in range(metadataInd,len(object_level_list)):
+                object_level_list[i][4] = val 
 
 
     def set_object6_level(self,instance,val):
-        global object_level, metadataInd, object_level_list
-        object_level[5] = val
-        for i in range(metadataInd,len(object_level_list)):
-            object_level_list[i][5] = val
-        print 'Obj6 level set to ' + str(object_level[5])
+        global metadataInd, object_level_list, record
+        if record == 1:
+            for i in range(metadataInd,len(object_level_list)):
+                object_level_list[i][5] = val 
 
 
 
     def set_object7_level(self,instance,val):
-        global object_level, metadataInd, object_level_list
-        object_level[6] = val
-        for i in range(metadataInd,len(object_level_list)):
-            object_level_list[i][6] = val
-        print 'Obj7 level set to ' + str(object_level[6])
+        global metadataInd, object_level_list, record
+        if record == 1:
+            for i in range(metadataInd,len(object_level_list)):
+                object_level_list[i][6] = val 
 
 
 
     def set_object8_level(self,instance,val):
-        global object_level, metadataInd, object_level_list
-        object_level[7] = val
-        for i in range(metadataInd,len(object_level_list)):
-            object_level_list[i][7] = val
-        print 'Obj8 level set to ' + str(object_level[7])
+        global metadataInd, object_level_list, record
+        if record == 1:
+            for i in range(metadataInd,len(object_level_list)):
+                object_level_list[i][7] = val 
 
 
 
     def set_object9_level(self,instance,val):
-        global object_level, metadataInd, object_level_list
-        object_level[8] = val
-        for i in range(metadataInd,len(object_level_list)):
-            object_level_list[i][8] = val        
-        print 'Obj4 level set to ' + str(object_level[8])
+        global metadataInd, object_level_list, record
+        if record == 1:
+            for i in range(metadataInd,len(object_level_list)):
+                object_level_list[i][8] = val 
 
 
 
     def set_object10_level(self,instance,val):
-        global object_level, metadataInd, object_level_list
-        object_level[9] = val
-        for i in range(metadataInd,len(object_level_list)):
-            object_level_list[i][9] = val        
-        print 'Obj10 level set to ' + str(object_level[9])
+        global metadataInd, object_level_list, record
+        if record == 1:
+            for i in range(metadataInd,len(object_level_list)):
+                object_level_list[i][9] = val 
 
 
 
     def set_object11_level(self,instance,val):
-        global object_level, metadataInd, object_level_list
-        object_level[10] = val
-        for i in range(metadataInd,len(object_level_list)):
-            object_level_list[i][10] = val        
-        print 'Obj11 level set to ' + str(object_level[10])
+        global metadataInd, object_level_list, record
+        if record == 1:
+            for i in range(metadataInd,len(object_level_list)):
+                object_level_list[i][10] = val 
 
 
     def set_object12_level(self,instance,val):
-        global object_level, metadataInd, object_level_list
-        object_level[11] = val
-        for i in range(metadataInd,len(object_level_list)):
-            object_level_list[i][11] = val        
-        print 'Obj12 level set to ' + str(object_level[11])
+        global metadataInd, object_level_list, record
+        if record == 1:
+            for i in range(metadataInd,len(object_level_list)):
+                object_level_list[i][11] = val 
 
     def set_object13_level(self,instance,val):
-        global object_level, metadataInd, object_level_list
-        object_level[12] = val
-        for i in range(metadataInd,len(object_level_list)):
-            object_level_list[i][13] = val
-        print 'Obj13 level set to ' + str(object_level[12]) 
+        global metadataInd, object_level_list, record
+        if record == 1:
+            for i in range(metadataInd,len(object_level_list)):
+                object_level_list[i][12] = val 
 
     def set_object14_level(self,instance,val):
-        global object_level, metadataInd, object_level_list
-        object_level[13] = val
-        for i in range(metadataInd,len(object_level_list)):
-            object_level_list[i][13] = val
-        print 'Obj14 level set to ' + str(object_level[13])
+        global metadataInd, object_level_list, record
+        if record == 1:
+            for i in range(metadataInd,len(object_level_list)):
+                object_level_list[i][13] = val 
 
     def set_object15_level(self,instance,val):
-        global object_level, metadataInd, object_level_list
-        object_level[14] = val
-        for i in range(metadataInd,len(object_level_list)):
-            object_level_list[i][14] = val    
-        print 'Obj15 level set to ' + str(object_level[14])
+        global metadataInd, object_level_list, record
+        if record == 1:
+            for i in range(metadataInd,len(object_level_list)):
+                object_level_list[i][14] = val 
 
     def set_object16_level(self,instance,val):
-        global object_level, metadataInd, object_level_list
-        object_level[15] = val
-        for i in range(metadataInd,len(object_level_list)):
-            object_level_list[i][15] = val
-        print 'Obj16 level set to ' + str(object_level[15])
+        global metadataInd, object_level_list, record
+        if record == 1:
+            for i in range(metadataInd,len(object_level_list)):
+                object_level_list[i][15] = val 
 
     def set_object1_pos(self,instance,val):
-        global object_pos, metadataInd, object_pos_list
-        object_pos[0] = val
-        for i in range(metadataInd,len(object_pos_list)):
-            object_pos_list[i][0] = val
-        print 'Obj1 pos set to ' + str(object_pos[0])
+        global metadataInd, object_pos_list, record
+        if record == 1:
+            for i in range(metadataInd,len(object_pos_list)):
+                object_pos_list[i][0] = val 
 
     def set_object2_pos(self,instance,val):
-        global object_pos, metadataInd, object_pos_list
-        object_pos[1] = val
-        for i in range(metadataInd,len(object_pos_list)):
-            object_pos_list[i][1] = val
-        print 'Obj2 pos set to ' + str(object_pos[1])
+        global metadataInd, object_pos_list, record
+        if record == 1:
+            for i in range(metadataInd,len(object_pos_list)):
+                object_pos_list[i][1] = val 
 
     def set_object3_pos(self,instance,val):
-        global object_pos, metadataInd, object_pos_list
-        object_pos[2] = val
-        for i in range(metadataInd,len(object_pos_list)):
-            object_pos_list[i][2] = val
-        print 'Obj3 pos set to ' + str(object_pos[2])
+        global metadataInd, object_pos_list, record
+        if record == 1:
+            for i in range(metadataInd,len(object_pos_list)):
+                object_pos_list[i][2] = val 
 
     def set_object4_pos(self,instance,val):
-        global object_pos, metadataInd, object_pos_list
-        object_pos[3] = val
-        for i in range(metadataInd,len(object_pos_list)):
-            object_pos_list[i][3] = val
-        print 'Obj4 pos set to ' + str(object_pos[3])        
+        global metadataInd, object_pos_list, record
+        if record == 1:
+            for i in range(metadataInd,len(object_pos_list)):
+                object_pos_list[i][3] = val         
 
     def set_object5_pos(self,instance,val):
-        global narrator_pos, metadataInd, object_pos_list
-        object_pos[4] = val
-        for i in range(metadataInd,len(object_pos_list)):
-            object_pos_list[i][5] = val
-        print 'Obj5 position set to ' + str(object_pos[4])
+        global metadataInd, object_pos_list, record
+        if record == 1:
+            for i in range(metadataInd,len(object_pos_list)):
+                object_pos_list[i][4] = val 
 
     def set_object6_pos(self,instance,val):
-        global object_pos, metadataInd, object_pos_list
-        object_pos[5] = val
-        for i in range(metadataInd,len(object_pos_list)):
-            object_pos_list[i][6] = val
-        print 'Obj6 pos set to ' + str(object_pos[5])
+        global metadataInd, object_pos_list, record
+        if record == 1:
+            for i in range(metadataInd,len(object_pos_list)):
+                object_pos_list[i][5] = val 
 
     def set_object7_pos(self,instance,val):
-        global object_pos, metadataInd, object_pos_list
-        object_pos[6] = val
-        for i in range(metadataInd,len(object_pos_list)):
-            object_pos_list[i][6] = val
-        print 'Obj7 pos set to ' + str(object_pos[6])
+        global metadataInd, object_pos_list, record
+        if record == 1:
+            for i in range(metadataInd,len(object_pos_list)):
+                object_pos_list[i][6] = val 
 
     def set_object8_pos(self,instance,val):
-        global object_pos, metadataInd, object_pos_list
-        object_pos[7] = val
-        for i in range(metadataInd,len(object_pos_list)):
-            object_pos_list[i][7] = val
-        print 'Obj8 pos set to ' + str(object_pos[7])
+        global metadataInd, object_pos_list, record
+        if record == 1:
+            for i in range(metadataInd,len(object_pos_list)):
+                object_pos_list[i][7] = val 
 
     def set_object9_pos(self,instance,val):
-        global object_pos, metadataInd, object_pos_list
-        object_pos[8] = val
-        for i in range(metadataInd,len(object_pos_list)):
-            object_pos_list[i][8] = val
-        print 'Obj4 pos set to ' + str(object_pos[8]) 
+        global metadataInd, object_pos_list, record
+        if record == 1:
+            for i in range(metadataInd,len(object_pos_list)):
+                object_pos_list[i][8] = val  
 
     def set_object10_pos(self,instance,val):
-        global object_pos, metadataInd, object_pos_list
-        object_pos[9] = val
-        for i in range(metadataInd,len(object_pos_list)):
-            object_pos_list[i][9] = val
-        print 'Obj10 pos set to ' + str(object_pos[9])  
+        global metadataInd, object_pos_list, record
+        if record == 1:
+            for i in range(metadataInd,len(object_pos_list)):
+                object_pos_list[i][9] = val  
 
     def set_object11_pos(self,instance,val):
-        global object_pos, metadataInd, object_pos_list
-        object_pos[10] = val
-        for i in range(metadataInd,len(object_pos_list)):
-            object_pos_list[i][10] = val
-        print 'Obj11 pos set to ' + str(object_pos[10])
+        global metadataInd, object_pos_list, record
+        if record == 1:
+            for i in range(metadataInd,len(object_pos_list)):
+                object_pos_list[i][10] = val 
 
     def set_object12_pos(self,instance,val):
-        global object_pos, metadataInd, object_pos_list
-        object_pos[11] = val
-        for i in range(metadataInd,len(object_pos_list)):
-            object_pos_list[i][11] = val
-        print 'Obj12 pos set to ' + str(object_pos[11]) 
+        global metadataInd, object_pos_list, record
+        if record == 1:
+            for i in range(metadataInd,len(object_pos_list)):
+                object_pos_list[i][11] = val  
 
     def set_object13_pos(self,instance,val):
-        global object_pos, metadataInd, object_pos_list
-        object_pos[12] = val
-        for i in range(metadataInd,len(object_pos_list)):
-            object_pos_list[i][12] = val
-        print 'Obj13 pos set to ' + str(object_pos[12]) 
+        global metadataInd, object_pos_list, record
+        if record == 1:
+            for i in range(metadataInd,len(object_pos_list)):
+                object_pos_list[i][12] = val  
 
     def set_object14_pos(self,instance,val):
-        global object_pos, metadataInd, object_pos_list
-        object_pos[13] = val
-        for i in range(metadataInd,len(object_pos_list)):
-            object_pos_list[i][13] = val
-        print 'Obj14 pos set to ' + str(object_pos[13])
+        global metadataInd, object_pos_list, record
+        if record == 1:
+            for i in range(metadataInd,len(object_pos_list)):
+                object_pos_list[i][13] = val 
 
     def set_object15_pos(self,instance,val):
-        global object_pos, metadataInd, object_pos_list
-        object_pos[14] = val
-        for i in range(metadataInd,len(object_pos_list)):
-            object_pos_list[i][14] = val
-        print 'Obj15 pos set to ' + str(object_pos[14]) 
+        global metadataInd, object_pos_list, record
+        if record == 1:
+            for i in range(metadataInd,len(object_pos_list)):
+                object_pos_list[i][14] = val 
 
     def set_object16_pos(self,instance,val):
-        global object_pos, metadataInd, object_pos_list
-        object_pos[15] = val
-        for i in range(metadataInd,len(object_pos_list)):
-            object_pos_list[i][15] = val
-        print 'Obj16 pos set to ' + str(object_pos[15])      
+        global metadataInd, object_pos_list, record
+        if record == 1:
+            for i in range(metadataInd,len(object_pos_list)):
+                object_pos_list[i][15] = val      
     
     def set_high_priority_level(self,instance,val):
         global high_priority_val
