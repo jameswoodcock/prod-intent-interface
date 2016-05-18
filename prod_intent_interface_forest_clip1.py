@@ -19,6 +19,7 @@ import math
 import mido
 import uuid
 import random
+import os
 
 #import kivy libraries
 from kivy.app import App
@@ -43,8 +44,10 @@ objectIDs = [[0],[1,2],[3,4],[23,24],[25,26],range(27,44),range(44,60)]         
 Nobjs = len(objectIDs)
 
 
-pos_range = 180      #Max/min position in degrees
-loop_len = 30       #Length of loop in seconds
+pos_range = 45      #Max/min position in degrees
+
+start_time = 0
+loop_len = 240       #Length of loop in seconds
 
 object_level = list()   #Generate some random initial values
 for n in range(Nobjs):
@@ -64,7 +67,9 @@ rendererFlag = 0
 high_priority_val = 1
 
 
-fname = str(uuid.uuid4()) + '.txt'
+folder_name = str(uuid.uuid4())
+os.mkdir(folder_name)
+file_name = 0
 
 metadata = list()
 metadataAdjusted = list()
@@ -72,6 +77,10 @@ metadataInd = 0
 firstLoop = 1
 
 record = 0
+write_mode = 0
+
+def remap(val, old_min, old_max, new_min, new_max):
+    return (((val - old_min)*(new_max - new_min)) / (old_max - old_min)) + new_min
 
 def deg2rad(rad):
     deg = (math.pi/180)*rad
@@ -82,7 +91,7 @@ def start_renderer(renderer):
     if renderer == 0:
         subprocess.call(['./renderer_all_speakers.sh'])
     elif renderer == 1:
-        subprocess.call(['./renderer_5_1.sh'])
+        subprocess.call(['./renderer_2_0.sh'])
 
 def send_receive_json(HOST,PORT_R,PORT_S):
     global firstLoop, metadata, metadataAdjusted, metadataInd, record, object_level_list, object_pos_list, object_level, object_pos
@@ -114,40 +123,57 @@ def send_receive_json(HOST,PORT_R,PORT_S):
         d = s.recvfrom(16384)       #Receive UDP packet
         data = d[0]                 #Get data from UDP packet
         addr = d[1]
-
+        #print data
         newmsg = json.loads(data.strip())       #Parse JSON message
 
-        if firstLoop == 1:          
+        if firstLoop == 1:
+
+            for i in range(Nobjs):         #Fix heigth for forest scene
+                for j in range(len(objectIDs[i])):
+                        if newmsg['objects'][objectIDs[i][j]]['type'] == 'plane':
+                            height = math.sin(float(newmsg['objects'][objectIDs[i][j]]['direction']['el']))
+                        else:
+                            height = float(newmsg['objects'][objectIDs[i][j]]['position']['z'])
+                            if 1 <= height <= 2:
+                                #Remap a height between 1 - 2 to a new value between 0 and 2
+                                newmsg['objects'][objectIDs[i][j]]['position']['z'] = remap(height, 1, 2, 0, 2)
+                            elif -2 <= height < 1:
+                                newmsg['objects'][objectIDs[i][j]]['position']['z'] = remap(height, -2, 1, -2, 0)
+                                #Remap a height between -1 - 1 to a new value between -2 and 0
+
+                            
             metadata.append(newmsg)         #Populate metadata in first loop
-            print newmsg
+            #print data
             metadataAdjusted.append(newmsg)         #Populate metadata in first loop
-            object_level_list.append(object_level)
-            print object_level
-            object_pos_list.append(object_pos)
-        else:                               #Run from 
+            object_level_list.append(list(object_level))
+            #print object_level
+            object_pos_list.append(list(object_pos))
+        else:                               #Run from   
             if metadataInd < len(metadata):
                 if rendererFlag == 0:
                     newmsg = metadata[metadataInd]
                     metadataInd = metadataInd + 1
-                    print metadataInd
+                    #print metadataInd
 
                 if rendererFlag == 1:                       #Only operate on objects if downmix
                     newmsg = metadataAdjusted[metadataInd]
                     metadataInd = metadataInd + 1
-                    print metadataInd                       
+                    #print metadataInd                       
                     #print "recording..."
                     try:                                #Sometimes the sync goes out and inedx exceeds dimensions of object_level_list...
+                        #print object_level_list
                         for i in range(Nobjs):         #Cycle through object list
                             for j in range(len(objectIDs[i])):
                                 #newmsg['objects'][objectIDs[i][j]]['level'] = object_level[i]
                                 newmsg['objects'][objectIDs[i][j]]['level'] = object_level_list[metadataInd][i]
-                                if i < 27:
+                                if i < 27:                  #Don't change position of atmos and music (they have ids < 27)
                                     if newmsg['objects'][objectIDs[i][j]]['type'] == 'plane':
                                         newmsg['objects'][objectIDs[i][j]]['direction']['az'] = object_pos_list[metadataInd][i]
                                     else:
                                         newmsg['objects'][objectIDs[i][j]]['position']['x'] = math.cos(deg2rad(object_pos_list[metadataInd][i]))
                                         newmsg['objects'][objectIDs[i][j]]['position']['y'] = math.sin(deg2rad(object_pos_list[metadataInd][i]))      
                                 metadataAdjusted[metadataInd] = newmsg
+                                #print object_level_list[metadataInd][i]
                     except:                         #...if this happens, use the previous frame's metadata
                         print 'Index excceded list size'
                         for i in range(Nobjs):         #Cycle through object list
@@ -168,7 +194,7 @@ def send_receive_json(HOST,PORT_R,PORT_S):
         s.sendto(newjsonmsg,(HOST,PORT_S))
 
 
-def monitor_midi():
+def monitor_midi():             #Monitor new midi messages
     with mido.open_input('HDSPMx73554b MIDI 3') as port:
         for message in port:
             if message.type != 'quarter_frame':
@@ -176,12 +202,12 @@ def monitor_midi():
                 print last_time
 
 def play_loop(dt):                                              #Start playing at beginning of loop
-    global firstLoop, metadataInd, thread
+    global firstLoop, metadataInd, thread, start_time
     firstLoop = 0
     metadataInd = 0
     outport = mido.open_output('HDSPMx73554b MIDI 3')
     stop = mido.Message('sysex', data=[127, 127, 6, 1])
-    move = mido.Message('sysex', data=[127,127,6,68,6,1,33,0,0,15,0])
+    move = mido.Message('sysex', data=[127,127,6,68,6,1,33,0,start_time,0,0])
     play_msg = mido.Message('sysex', data=[127, 127, 6, 3])
     outport.send(stop)
     outport.send(move)
@@ -192,7 +218,7 @@ def play_loop(dt):                                              #Start playing a
 def play_first_loop(dt):                                              #Start playing at beginning of loop
     outport = mido.open_output('HDSPMx73554b MIDI 3')
     stop = mido.Message('sysex', data=[127, 127, 6, 1])
-    move = mido.Message('sysex', data=[127,127,6,68,6,1,33,0,0,15,0])
+    move = mido.Message('sysex', data=[127,127,6,68,6,1,33,0,start_time,0,0])
     play_msg = mido.Message('sysex', data=[127, 127, 6, 3])
     outport.send(stop)
     outport.send(move)
@@ -248,8 +274,9 @@ class mySlider(GridLayout):
         # self.object15_pos_slider = Slider(min=-pos_range, max=pos_range,orientation='vertical',value=object_pos[15])
         # self.object16_lev_slider = Slider(min=0, max=1,orientation='vertical',value=object_level[15])
         # self.object16_pos_slider = Slider(min=-pos_range, max=pos_range,orientation='vertical')
-        self.btn_toggle_record = ToggleButton(text = "Reading",state = 'normal')
-        self.btn_toggle_renderer = ToggleButton(text = "Switch renderer",state = 'normal')
+        self.btn_toggle_record = ToggleButton(text = "Reading", state = 'normal')
+        self.btn_toggle_record_mode = ToggleButton(text = "Write to all", state = 'normal')
+        self.btn_toggle_renderer = ToggleButton(text = "Reference",state = 'normal')
         self.btn_play = Button(text = "PLAY") 
         self.btn_stop = Button(text = "STOP")      
         self.object1_lev_slider.bind(value=self.set_object1_level)
@@ -285,6 +312,7 @@ class mySlider(GridLayout):
         # self.object16_lev_slider.bind(value=self.set_object16_level)
         # self.object16_pos_slider.bind(value=self.set_object16_pos)
         self.btn_toggle_record.bind(state=self.switch_record)
+        self.btn_toggle_record_mode.bind(state=self.switch_record_mode)
         self.btn_toggle_renderer.bind(state=self.switch_renderer)
         self.btn_play.bind(on_press = self.play)
         self.btn_stop.bind(on_press = self.stop)
@@ -344,7 +372,7 @@ class mySlider(GridLayout):
         self.add_widget(Label(text=''))
         # self.add_widget(Label(text=''))
 
-        self.add_widget(Label(text=''))
+        self.add_widget(self.btn_toggle_record_mode)
         self.add_widget(Label(text=''))
 
         self.add_widget(self.btn_toggle_record)
@@ -353,10 +381,18 @@ class mySlider(GridLayout):
         self.add_widget(self.btn_stop)
 
     def set_object1_level(self,instance,val):
-        global metadataInd, object_level_list, record
+        global metadataInd, object_level_list, record, write_mode
+        print object_level_list
         if record == 1:
-            for i in range(metadataInd,len(object_level_list)):
-                object_level_list[i][0] = val 
+            #print range(metadataInd,len(object_level_list))
+            if write_mode == 1:                                 #Write to end
+                for i in range(metadataInd,len(object_level_list)):
+                    object_level_list[i][0] = val
+                    print object_level_list[i]
+            else:
+                for i in range(0,len(object_level_list)):       #Write to all
+                    object_level_list[i][0] = val
+                    print object_level_list[i]
 
     def set_object2_level(self,instance,val):
         global metadataInd, object_level_list, record
@@ -575,10 +611,12 @@ class mySlider(GridLayout):
             rendererFlag = 0
             renderer_thread = threading.Thread(target=start_renderer,args=[0])
             renderer_thread.start()
+            self.btn_toggle_renderer.text = "Reference"
         else:
             rendererFlag = 1
             renderer_thread = threading.Thread(target=start_renderer,args=[1])
             renderer_thread.start()
+            self.btn_toggle_renderer.text = "downmix"
 
 
     def switch_record(self,instance,val):
@@ -595,6 +633,18 @@ class mySlider(GridLayout):
             print record
             self.btn_toggle_record.text = "Writing"
 
+    def switch_record_mode(self,instance,val):
+        global record_mode
+       
+        if val == 'normal':          
+            record_mode = 0
+            self.btn_toggle_record_mode.text = "Write to all"
+            
+        else:
+            record = 1
+            print record
+            self.btn_toggle_record_mode.text = "Write to end"
+
 
     def play(self,instance):
         print 'hi'
@@ -610,10 +660,11 @@ class mySlider(GridLayout):
         outport.send(stop_msg)
 
     def write_data(self,dt):
-        global object_level, object_pos, fname, object_level_list
-        with open(fname,"a") as myfile:
+        global object_level, object_pos, folder_name, file_name, object_level_list
+        with open('./' + folder_name + '/' + str(file_name) + '.txt',"a") as myfile:
             myfile.write(str(object_level_list) + '\n')
             #myfile.write(str(object_pos) + '\n')
+        file_name = file_name + 1
 
     def update_sliders(self,dt):
         global object_level_list
