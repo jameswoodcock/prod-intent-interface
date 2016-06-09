@@ -40,14 +40,15 @@ PORT_S = 4240
 
 #Global variables
 
-objectIDs = [[0],[1,2],[3,4],[23,24],[25,26],range(27,44),range(44,60)]          #Number of objects
+objectIDs = [[0],[1,2],[5,6],[9,10],[17,18],range(27,44),range(23,27) + range(44,60)]          #Number of objects
 Nobjs = len(objectIDs)
 
 
 pos_range = 45      #Max/min position in degrees
 
-start_time = 0
-loop_len = 21       #Length of loop in seconds
+start_time_min = 2
+start_time = 30
+loop_len = 20       #Length of loop in seconds
 
 object_level = list()   #Generate some random initial values
 for n in range(Nobjs):
@@ -207,7 +208,7 @@ def play_loop(dt):                                              #Start playing a
     metadataInd = 0
     outport = mido.open_output('HDSPMx73554b MIDI 3')
     stop = mido.Message('sysex', data=[127, 127, 6, 1])
-    move = mido.Message('sysex', data=[127,127,6,68,6,1,33,0,start_time,0,0])
+    move = mido.Message('sysex', data=[127,127,6,68,6,1,33,start_time_min,start_time,0,0])
     play_msg = mido.Message('sysex', data=[127, 127, 6, 3])
     outport.send(stop)
     outport.send(move)
@@ -218,7 +219,7 @@ def play_loop(dt):                                              #Start playing a
 def play_first_loop(dt):                                              #Start playing at beginning of loop
     outport = mido.open_output('HDSPMx73554b MIDI 3')
     stop = mido.Message('sysex', data=[127, 127, 6, 1])
-    move = mido.Message('sysex', data=[127,127,6,68,6,1,33,0,start_time,0,0])
+    move = mido.Message('sysex', data=[127,127,6,68,6,1,33,start_time_min,start_time,0,0])
     play_msg = mido.Message('sysex', data=[127, 127, 6, 3])
     outport.send(stop)
     outport.send(move)
@@ -256,8 +257,8 @@ class mySlider(GridLayout):
         self.object6_pos_slider = Slider(min=-pos_range, max=pos_range,orientation='vertical',value=object_pos[5])
         self.object7_lev_slider = Slider(min=0, max=1,orientation='vertical',value=object_level[6])
         self.object7_pos_slider = Slider(min=-pos_range, max=pos_range,orientation='vertical',value=object_pos[6])
-        # self.object8_lev_slider = Slider(min=0, max=1,orientation='vertical',value=object_level[7])
-        # self.object8_pos_slider = Slider(min=-pos_range, max=pos_range,orientation='vertical',value=object_pos[7])
+        #self.object8_lev_slider = Slider(min=0, max=1,orientation='vertical',value=object_level[7])
+        #self.object8_pos_slider = Slider(min=-pos_range, max=pos_range,orientation='vertical',value=object_pos[7])
         # self.object9_lev_slider = Slider(min=0, max=1,orientation='vertical',value=object_level[8])
         # self.object9_pos_slider = Slider(min=-pos_range, max=pos_range,orientation='vertical',value=object_pos[8])
         # self.object10_lev_slider = Slider(min=0, max=1,orientation='vertical',value=object_level[9])
@@ -278,7 +279,8 @@ class mySlider(GridLayout):
         self.btn_toggle_record_mode = ToggleButton(text = "Write to all", state = 'normal')
         self.btn_toggle_renderer = ToggleButton(text = "Reference",state = 'normal')
         self.btn_play = Button(text = "PLAY") 
-        self.btn_stop = Button(text = "STOP")      
+        self.btn_stop = Button(text = "STOP")
+        self.btn_quit = Button(text = "QUIT")       
         self.object1_lev_slider.bind(value=self.set_object1_level)
         self.object1_pos_slider.bind(value=self.set_object1_pos)
         self.object2_lev_slider.bind(value=self.set_object2_level)
@@ -293,8 +295,8 @@ class mySlider(GridLayout):
         self.object6_pos_slider.bind(value=self.set_object6_pos)
         self.object7_lev_slider.bind(value=self.set_object7_level)
         self.object7_pos_slider.bind(value=self.set_object7_pos)
-        # self.object8_lev_slider.bind(value=self.set_object8_level)
-        # self.object8_pos_slider.bind(value=self.set_object8_pos)
+        #self.object8_lev_slider.bind(value=self.set_object8_level)
+        #self.object8_pos_slider.bind(value=self.set_object8_pos)
         # self.object9_lev_slider.bind(value=self.set_object9_level)
         # self.object9_pos_slider.bind(value=self.set_object9_pos)
         # self.object10_lev_slider.bind(value=self.set_object10_level)
@@ -316,21 +318,22 @@ class mySlider(GridLayout):
         self.btn_toggle_renderer.bind(state=self.switch_renderer)
         self.btn_play.bind(on_press = self.play)
         self.btn_stop.bind(on_press = self.stop)
-        self.add_widget(Label(text=''))
+        self.btn_quit.bind(on_press = self.quit)
+        self.add_widget(self.btn_quit)
         self.add_widget(Label(text='[b]Narrator[/b]',markup = True))
         self.add_widget(Label(text='[b]Boy[/b]',markup = True))
-        self.add_widget(Label(text='[b]Girl[/b]',markup = True))
-        #self.add_widget(Label(text='[b]Creature voice[/b]',markup = True))
+        #self.add_widget(Label(text='[b]Amelia[/b]',markup = True))
+        self.add_widget(Label(text='[b]Creature voice[/b]',markup = True))
         #self.add_widget(Label(text='[b]Creature feet[/b]',markup = True))
-        #self.add_widget(Label(text='[b]FX1[/b]',markup = True))
+        #self.add_widget(Label(text='[b]Feet landing[/b]',markup = True))
         #self.add_widget(Label(text='[b]FX2[/b]',markup = True))
         #self.add_widget(Label(text='[b]FX3[/b]',markup = True))
         #self.add_widget(Label(text='[b]FX4[/b]',markup = True))
         #self.add_widget(Label(text='[b]FX5[/b]',markup = True))
         #self.add_widget(Label(text='[b]FX6[/b]',markup = True))
         #self.add_widget(Label(text='[b]FX7[/b]',markup = True))
-        self.add_widget(Label(text='[b]FX8[/b]',markup = True))
-        self.add_widget(Label(text='[b]FX9[/b]',markup = True))
+        self.add_widget(Label(text='[b]Splashes[/b]',markup = True))
+        self.add_widget(Label(text='[b]River[/b]',markup = True))
         self.add_widget(Label(text='[b]Music[/b]',markup = True))
         self.add_widget(Label(text='[b]Atmos[/b]',markup = True))
         # self.add_widget(Label(text='[b]Reverb[/b]',markup = True))
@@ -343,7 +346,7 @@ class mySlider(GridLayout):
         self.add_widget(self.object5_lev_slider)
         self.add_widget(self.object6_lev_slider)
         self.add_widget(self.object7_lev_slider)
-        # self.add_widget(self.object8_lev_slider)
+        #self.add_widget(self.object8_lev_slider)
         # self.add_widget(self.object9_lev_slider)
         # self.add_widget(self.object10_lev_slider)
         # self.add_widget(self.object11_lev_slider)
@@ -359,7 +362,7 @@ class mySlider(GridLayout):
         self.add_widget(self.object3_pos_slider)
         self.add_widget(self.object4_pos_slider)
         self.add_widget(self.object5_pos_slider)
-        # self.add_widget(self.object6_pos_slider)
+        #self.add_widget(self.object6_pos_slider)
         # self.add_widget(self.object7_pos_slider)
         # self.add_widget(self.object8_pos_slider)
         # self.add_widget(self.object9_pos_slider)
@@ -380,18 +383,21 @@ class mySlider(GridLayout):
         self.add_widget(self.btn_play)
         self.add_widget(self.btn_stop)
 
+
     def set_object1_level(self,instance,val):
         global metadataInd, object_level_list, record, write_mode
-        print object_level_list
+        #print object_level_list
         if record == 1:
             if write_mode == 1:                                 #Write to end
                 for i in range(metadataInd,len(object_level_list)):
                     object_level_list[i][0] = val
-                    print object_level_list[i]
+                    #print object_level_list[i]
+                    print 'Writing to end'
             else:
                 for i in range(0,len(object_level_list)):       #Write to all
                     object_level_list[i][0] = val
-                    print object_level_list[i]
+                    #print object_level_list[i]
+                    print 'Writing to all'
 
     def set_object2_level(self,instance,val):
         global metadataInd, object_level_list, record, write_mode
@@ -827,6 +833,7 @@ class mySlider(GridLayout):
             
         else:
             write_mode = 1
+            print write_mode
             self.btn_toggle_record_mode.text = "Write to end"
 
 
@@ -842,6 +849,15 @@ class mySlider(GridLayout):
         outport = mido.open_output('HDSPMx73554b MIDI 3')
         stop_msg = mido.Message('sysex', data=[127, 127, 6, 1])    
         outport.send(stop_msg)
+
+    def quit(self,instance):
+        Clock.unschedule(play_loop)
+        outport = mido.open_output('HDSPMx73554b MIDI 3')
+        stop_msg = mido.Message('sysex', data=[127, 127, 6, 1])    
+        outport.send(stop_msg)
+        App.get_running_app().stop()
+        #sys.exit(0)
+
 
     def write_data(self,dt):
         global object_level, object_pos, folder_name, file_name, object_level_list, object_pos_list
