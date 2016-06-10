@@ -40,15 +40,16 @@ PORT_S = 4240
 
 #Global variables
 
-objectIDs = [[0],[1,2],[5,6],[9,10],[17,18],range(27,44),range(23,27) + range(44,60)]          #Number of objects
+objectIDs = [[1,2],[5,6],[7,8],[11,12],[15,16],[17,18],[19,20],[21,22],[23,24],[25,26],range(27,44),[13,14] + range(23,27) + range(44,60)]          #Number of objects
 Nobjs = len(objectIDs)
 
 
 pos_range = 45      #Max/min position in degrees
 
-start_time_min = 2
-start_time = 30
-loop_len = 20       #Length of loop in seconds
+start_time_min = 3
+start_time = 15
+start_time_ms = 15
+loop_len = 36       #Length of loop in seconds
 
 object_level = list()   #Generate some random initial values
 for n in range(Nobjs):
@@ -203,12 +204,12 @@ def monitor_midi():             #Monitor new midi messages
                 print last_time
 
 def play_loop(dt):                                              #Start playing at beginning of loop
-    global firstLoop, metadataInd, thread, start_time, start_time_min
+    global firstLoop, metadataInd, thread, start_time, start_time_min, start_time_ms
     firstLoop = 0
     metadataInd = 0
     outport = mido.open_output('HDSPMx73554b MIDI 3')
     stop = mido.Message('sysex', data=[127, 127, 6, 1])
-    move = mido.Message('sysex', data=[127,127,6,68,6,1,33,start_time_min,start_time,0,0])
+    move = mido.Message('sysex', data=[127,127,6,68,6,1,33,start_time_min,start_time,start_time_ms,0])
     play_msg = mido.Message('sysex', data=[127, 127, 6, 3])
     outport.send(stop)
     outport.send(move)
@@ -219,7 +220,7 @@ def play_loop(dt):                                              #Start playing a
 def play_first_loop(dt):                                              #Start playing at beginning of loop
     outport = mido.open_output('HDSPMx73554b MIDI 3')
     stop = mido.Message('sysex', data=[127, 127, 6, 1])
-    move = mido.Message('sysex', data=[127,127,6,68,6,1,33,start_time_min,start_time,0,0])
+    move = mido.Message('sysex', data=[127,127,6,68,6,1,33,start_time_min,start_time,start_time_ms,0])
     play_msg = mido.Message('sysex', data=[127, 127, 6, 3])
     outport.send(stop)
     outport.send(move)
@@ -242,7 +243,7 @@ class mySlider(GridLayout):
     def __init__(self, **kwargs):
         super(mySlider, self).__init__(**kwargs)
 
-        self.cols = 8
+        self.cols = 13
         self.object1_lev_slider = Slider(min=0, max=2,orientation='vertical',value=object_level[0])
         self.object1_pos_slider = Slider(min=-pos_range, max=pos_range,orientation='vertical',value=object_pos[0])
         self.object2_lev_slider = Slider(min=0, max=2,orientation='vertical',value=object_level[1])
@@ -257,16 +258,16 @@ class mySlider(GridLayout):
         self.object6_pos_slider = Slider(min=-pos_range, max=pos_range,orientation='vertical',value=object_pos[5])
         self.object7_lev_slider = Slider(min=0, max=2,orientation='vertical',value=object_level[6])
         self.object7_pos_slider = Slider(min=-pos_range, max=pos_range,orientation='vertical',value=object_pos[6])
-        #self.object8_lev_slider = Slider(min=0, max=2,orientation='vertical',value=object_level[7])
-        #self.object8_pos_slider = Slider(min=-pos_range, max=pos_range,orientation='vertical',value=object_pos[7])
-        # self.object9_lev_slider = Slider(min=0, max=2,orientation='vertical',value=object_level[8])
-        # self.object9_pos_slider = Slider(min=-pos_range, max=pos_range,orientation='vertical',value=object_pos[8])
-        # self.object10_lev_slider = Slider(min=0, max=2,orientation='vertical',value=object_level[9])
-        # self.object10_pos_slider = Slider(min=-pos_range, max=pos_range,orientation='vertical',value=object_pos[9])
-        # self.object11_lev_slider = Slider(min=0, max=2,orientation='vertical',value=object_level[10])
-        # self.object11_pos_slider = Slider(min=-pos_range, max=pos_range,orientation='vertical',value=object_pos[10])
-        # self.object12_lev_slider = Slider(min=0, max=2,orientation='vertical',value=object_level[11])
-        # self.object12_pos_slider = Slider(min=-pos_range, max=pos_range,orientation='vertical',value=object_pos[11])
+        self.object8_lev_slider = Slider(min=0, max=2,orientation='vertical',value=object_level[7])
+        self.object8_pos_slider = Slider(min=-pos_range, max=pos_range,orientation='vertical',value=object_pos[7])
+        self.object9_lev_slider = Slider(min=0, max=2,orientation='vertical',value=object_level[8])
+        self.object9_pos_slider = Slider(min=-pos_range, max=pos_range,orientation='vertical',value=object_pos[8])
+        self.object10_lev_slider = Slider(min=0, max=2,orientation='vertical',value=object_level[9])
+        self.object10_pos_slider = Slider(min=-pos_range, max=pos_range,orientation='vertical',value=object_pos[9])
+        self.object11_lev_slider = Slider(min=0, max=2,orientation='vertical',value=object_level[10])
+        self.object11_pos_slider = Slider(min=-pos_range, max=pos_range,orientation='vertical',value=object_pos[10])
+        self.object12_lev_slider = Slider(min=0, max=2,orientation='vertical',value=object_level[11])
+        self.object12_pos_slider = Slider(min=-pos_range, max=pos_range,orientation='vertical',value=object_pos[11])
         # self.object13_lev_slider = Slider(min=0, max=2,orientation='vertical',value=object_level[12])
         # self.object13_pos_slider = Slider(min=-pos_range, max=pos_range,orientation='vertical',value=object_pos[13])
         # self.object14_lev_slider = Slider(min=0, max=2,orientation='vertical',value=object_level[13])
@@ -295,15 +296,15 @@ class mySlider(GridLayout):
         self.object6_pos_slider.bind(value=self.set_object6_pos)
         self.object7_lev_slider.bind(value=self.set_object7_level)
         self.object7_pos_slider.bind(value=self.set_object7_pos)
-        #self.object8_lev_slider.bind(value=self.set_object8_level)
-        #self.object8_pos_slider.bind(value=self.set_object8_pos)
-        # self.object9_lev_slider.bind(value=self.set_object9_level)
-        # self.object9_pos_slider.bind(value=self.set_object9_pos)
-        # self.object10_lev_slider.bind(value=self.set_object10_level)
-        # self.object10_pos_slider.bind(value=self.set_object10_pos)
-        # self.object11_lev_slider.bind(value=self.set_object11_level)
+        self.object8_lev_slider.bind(value=self.set_object8_level)
+        self.object8_pos_slider.bind(value=self.set_object8_pos)
+        self.object9_lev_slider.bind(value=self.set_object9_level)
+        self.object9_pos_slider.bind(value=self.set_object9_pos)
+        self.object10_lev_slider.bind(value=self.set_object10_level)
+        self.object10_pos_slider.bind(value=self.set_object10_pos)
+        self.object11_lev_slider.bind(value=self.set_object11_level)
         # self.object11_pos_slider.bind(value=self.set_object11_pos)
-        # self.object12_lev_slider.bind(value=self.set_object12_level)
+        self.object12_lev_slider.bind(value=self.set_object12_level)
         # self.object12_pos_slider.bind(value=self.set_object12_pos)
         # self.object13_lev_slider.bind(value=self.set_object13_level)
         # self.object13_pos_slider.bind(value=self.set_object13_pos)
@@ -322,11 +323,18 @@ class mySlider(GridLayout):
         
         #self.add_widget(self.btn_quit)
         self.add_widget(Label(text=''))
-        self.add_widget(Label(text='[b]Narrator[/b]',markup = True))
+        #self.add_widget(Label(text='[b]Narrator[/b]',markup = True))
         self.add_widget(Label(text='[b]Boy[/b]',markup = True))
         #self.add_widget(Label(text='[b]Amelia[/b]',markup = True))
         self.add_widget(Label(text='[b]Creature voice[/b]',markup = True))
-        #self.add_widget(Label(text='[b]Creature feet[/b]',markup = True))
+        self.add_widget(Label(text='[b]Water FX[/b]',markup = True))
+        self.add_widget(Label(text='[b]Water FX[/b]',markup = True))
+        self.add_widget(Label(text='[b]Water FX[/b]',markup = True))
+        self.add_widget(Label(text='[b]Water FX[/b]',markup = True))
+        self.add_widget(Label(text='[b]Water FX[/b]',markup = True))
+        self.add_widget(Label(text='[b]Water FX[/b]',markup = True))
+        self.add_widget(Label(text='[b]Water FX[/b]',markup = True))
+        self.add_widget(Label(text='[b]Water FX[/b]',markup = True))
         #self.add_widget(Label(text='[b]Feet landing[/b]',markup = True))
         #self.add_widget(Label(text='[b]FX2[/b]',markup = True))
         #self.add_widget(Label(text='[b]FX3[/b]',markup = True))
@@ -334,8 +342,8 @@ class mySlider(GridLayout):
         #self.add_widget(Label(text='[b]FX5[/b]',markup = True))
         #self.add_widget(Label(text='[b]FX6[/b]',markup = True))
         #self.add_widget(Label(text='[b]FX7[/b]',markup = True))
-        self.add_widget(Label(text='[b]Splashes[/b]',markup = True))
-        self.add_widget(Label(text='[b]River[/b]',markup = True))
+        #self.add_widget(Label(text='[b]Splashes[/b]',markup = True))
+        #self.add_widget(Label(text='[b]River[/b]',markup = True))
         self.add_widget(Label(text='[b]Music[/b]',markup = True))
         self.add_widget(Label(text='[b]Atmos[/b]',markup = True))
         # self.add_widget(Label(text='[b]Reverb[/b]',markup = True))
@@ -348,11 +356,11 @@ class mySlider(GridLayout):
         self.add_widget(self.object5_lev_slider)
         self.add_widget(self.object6_lev_slider)
         self.add_widget(self.object7_lev_slider)
-        #self.add_widget(self.object8_lev_slider)
-        # self.add_widget(self.object9_lev_slider)
-        # self.add_widget(self.object10_lev_slider)
-        # self.add_widget(self.object11_lev_slider)
-        # self.add_widget(self.object12_lev_slider)
+        self.add_widget(self.object8_lev_slider)
+        self.add_widget(self.object9_lev_slider)
+        self.add_widget(self.object10_lev_slider)
+        self.add_widget(self.object11_lev_slider)
+        self.add_widget(self.object12_lev_slider)
         # self.add_widget(self.object13_lev_slider)
         # self.add_widget(self.object14_lev_slider)
         # self.add_widget(self.object15_lev_slider)
@@ -364,11 +372,11 @@ class mySlider(GridLayout):
         self.add_widget(self.object3_pos_slider)
         self.add_widget(self.object4_pos_slider)
         self.add_widget(self.object5_pos_slider)
-        #self.add_widget(self.object6_pos_slider)
-        # self.add_widget(self.object7_pos_slider)
-        # self.add_widget(self.object8_pos_slider)
-        # self.add_widget(self.object9_pos_slider)
-        # self.add_widget(self.object10_pos_slider)
+        self.add_widget(self.object6_pos_slider)
+        self.add_widget(self.object7_pos_slider)
+        self.add_widget(self.object8_pos_slider)
+        self.add_widget(self.object9_pos_slider)
+        self.add_widget(self.object10_pos_slider)
         # self.add_widget(self.object11_pos_slider)
         # self.add_widget(self.object12_pos_slider)
         # self.add_widget(self.object13_pos_slider)
